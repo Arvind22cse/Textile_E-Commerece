@@ -38,7 +38,7 @@ router.post("/", verifyToken, async (req, res) => {
       message: "Missing required fields (products, amount, or address)"
     });
   }
-
+  console.log("✅ JWT Payload:", req.user);
   try {
     const order = await Order.create({
       userID: ObjectId(req.user.uid),
@@ -80,6 +80,33 @@ router.get("/stats", verifyAdminAccess, async (req, res) => {
     return res.status(500).json(orderResponse.unexpectedError);
   }
 });
+router.post("/create", verifyToken, async (req, res) => {
+  try {
+    const { products, amount } = req.body;
+
+    if (!products || !Array.isArray(products) || !amount) {
+      return res.status(400).json({
+        status: "error",
+        message: "Missing required fields (products or amount)",
+      });
+    }
+    console.log("✅ JWT Payload:", req.user);
+
+    const newOrder = new Order({
+      userID: ObjectId(req.user.uid), // extract from JWT payload
+      products,
+      amount,
+      status: "pending",
+    });
+
+    const savedOrder = await newOrder.save();
+    res.status(201).json(savedOrder);
+  } catch (error) {
+    console.error("Error creating order:", error);
+    res.status(500).json({ status: "error", message: "Something went wrong" });
+  }
+});
+
 
 // Get an order - authorized user & admin only
 router.get("/:id", verifyToken, async (req, res) => {
@@ -151,11 +178,15 @@ router.delete("/:id", verifyAdminAccess, async (req, res) => {
 // Get user orders - authorized user & admin only
 router.get("/user/:id", verifyAuthorization, async (req, res) => {
   try {
-    let orders = await Order.find({ userID: ObjectId(req.params.id) })
-      .populate({
-        path: 'products.productID',
-        select: ['title', 'image'],
-      });
+    const orders = await Order.find({ userID: req.params.id })
+    .populate("userID", "username email")
+    .populate("products.productID", "title image");
+  
+  
+      // .populate({
+      //   path: 'products.productID',
+      //   select: ['title', 'image'],
+      // });
 
     return res.json(orders);
   } catch (err) {
@@ -164,6 +195,25 @@ router.get("/user/:id", verifyAuthorization, async (req, res) => {
   }
 });
 
+router.get("/with-users", verifyAdminAccess, async (req, res) => {
+  try {
+    const orders = await Order.find()
+      .populate("userID", "name email phone")
+      .populate("products.productID", "title price image")
+      .select("-__v");
+
+    return res.status(200).json(orders);
+  } catch (err) {
+    console.error("Error in /with-users route:", err); // Add this for detailed error logging
+    return res.status(500).json({
+      status: "error",
+      message: "An unexpected error occurred",
+      error: err.message, // 👈 Add this temporarily to see what’s wrong
+    });
+  }
+});
+
+module.exports = router;
 const orderResponse = {
   orderCreated: {
     status: "ok",

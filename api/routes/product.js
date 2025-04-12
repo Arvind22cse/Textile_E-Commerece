@@ -27,7 +27,7 @@ const upload = multer({ storage });
 // ✅ **1. Get All Products (Public)**
 router.get("/", async (req, res) => {
   try {
-    const products = await Product.find();
+    const products = await Product.find({});
     res.json(products);
   } catch (err) {
     console.error("Error fetching products:", err);
@@ -57,6 +57,18 @@ router.get("/:id", async (req, res) => {
     res.status(500).json(productResponse.unexpectedError);
   }
 });
+// router.get("/", async (req, res) => {
+//   try {
+//     const product = await Product.find({});
+//     if (!product) {
+//       return res.status(404).json({ status: "error", message: "Product not found" });
+//     }
+//     res.json(product);
+//   } catch (err) {
+//     console.error("Error fetching product:", err);
+//     res.status(500).json(productResponse.unexpectedError);
+//   }
+// });
 
 
 // ✅ **3. Add a New Product (Admin Only, with Image Upload)**

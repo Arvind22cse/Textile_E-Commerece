@@ -21,6 +21,7 @@ const Register = ({ handleCloseClick }) => {
       if (response.status === 201) {
         // Handle successful registration
         console.log('Registration successful');
+       
       } else {
         // Handle errors
         console.error('Registration failed');

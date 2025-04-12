@@ -40,6 +40,7 @@ const Navbar = () => {
     setUserRole(null);
     setShowDropdown(false);
     alert("Logged out successfully!");
+    localStorage.setItem("islogin", false);
     navigate("/");
   };
 
@@ -56,6 +57,7 @@ const Navbar = () => {
           <Link to="/about" className="hover:text-gray-400">About</Link>
           <Link to="/products" className="hover:text-gray-400">Products</Link>
           <Link to="/contact" className="hover:text-gray-400">Contact</Link>
+          <Link to="/cart" className="hover:text-gray-400">Cart</Link>
         </div>
         <div className="space-x-4 flex items-center">
           {loggedIn ? (
@@ -85,7 +87,11 @@ const Navbar = () => {
       </nav>
       {showLogin && <Login handleCloseClick={handleCloseClick} handleLoginSuccess={handleLoginSuccess} />}
       {showRegister && <Register handleCloseClick={handleCloseClick} />}
+     
+
+    
     </>
+
   );
 };
 
