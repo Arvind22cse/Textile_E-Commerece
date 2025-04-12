@@ -1,69 +1,92 @@
-import React, { useState, useEffect } from "react";
+import React, { useEffect, useState } from "react";
 
-const ManageOrders = () => {
-  const [orders, setOrders] = useState([]);
+const AdminUserOrders = () => {
+  const [users, setUsers] = useState([]);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    fetch("http://localhost:5000/admin/orders") // Update with your API endpoint
-      .then((res) => res.json())
-      .then((data) => setOrders(data))
-      .catch((error) => console.error("Error fetching orders:", error));
+    const fetchUserOrders = async () => {
+      try {
+        const res = await fetch("http://localhost:5000/userprod/getuser");
+        const data = await res.json();
+        console.log("All user orders:", data);
+        setUsers(data);
+        setLoading(false);
+      } catch (err) {
+        console.error("Failed to fetch user orders", err);
+        setLoading(false);
+      }
+    };
+
+    fetchUserOrders();
   }, []);
 
-  const updateOrderStatus = (orderId, newStatus) => {
-    fetch(`http://localhost:5000/admin/orders/${orderId}`, {
-      method: "PUT",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ status: newStatus }),
-    })
-      .then(() => {
-        setOrders(orders.map(order => 
-          order.id === orderId ? { ...order, status: newStatus } : order
-        ));
-      })
-      .catch(error => console.error("Error updating order:", error));
-  };
+  if (loading) return <div className="p-6 text-center">Loading...</div>;
 
   return (
-    <div className="p-6 max-w-4xl mx-auto bg-white rounded shadow-lg">
-      <h2 className="text-2xl font-bold mb-4">Manage Orders</h2>
-      {orders.length === 0 ? (
+    <div className="p-6 max-w-7xl mx-auto">
+      <h2 className="text-3xl font-bold mb-6">All User Orders</h2>
+      {users.length === 0 ? (
         <p>No orders found.</p>
       ) : (
-        <table className="w-full border-collapse border border-gray-300">
-          <thead>
-            <tr className="bg-gray-200">
-              <th className="border p-2">Order ID</th>
-              <th className="border p-2">User</th>
-              <th className="border p-2">Total</th>
-              <th className="border p-2">Status</th>
-              <th className="border p-2">Actions</th>
-            </tr>
-          </thead>
-          <tbody>
-            {orders.map(order => (
-              <tr key={order.id} className="text-center">
-                <td className="border p-2">{order.id}</td>
-                <td className="border p-2">{order.user}</td>
-                <td className="border p-2">₹{order.total}</td>
-                <td className="border p-2">
-                  <select
-                    value={order.status}
-                    onChange={(e) => updateOrderStatus(order.id, e.target.value)}
-                    className="border p-1 rounded"
-                  >
-                    <option value="Pending">Pending</option>
-                    <option value="Shipped">Shipped</option>
-                    <option value="Delivered">Delivered</option>
-                  </select>
-                </td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          {users.map((user, idx) => (
+            <div
+              key={idx}
+              className="border rounded-lg shadow-md p-4 bg-white space-y-4"
+            >
+              {/* User Info */}
+              <div>
+                <h3 className="text-xl font-semibold mb-1">{user.name}</h3>
+                <p className="text-sm text-gray-600">📧 {user.email}</p>
+                <p className="text-sm text-gray-600">📞 {user.phone}</p>
+                <p className="text-sm text-gray-600">📍 {user.shippingaddress}</p>
+                <p className="text-sm text-gray-600">🏷️ Pincode: {user.pincode}</p>
+              </div>
+
+              {/* Ordered Products */}
+              <div>
+                <h4 className="font-bold mb-2">🛒 Ordered Products:</h4>
+                {user.orderedProducts.map((product, i) => {
+                  const p = product.productID;
+                  return (
+                    <div
+                      key={i}
+                      className="border p-3 rounded mb-2 space-y-2 bg-gray-50"
+                    >
+                      <div className="flex items-start gap-4">
+                        {p?.image && (
+                          <img
+                            src={`http://localhost:5000/uploads/${p.image}`}
+                            alt={p?.title}
+                            className="w-20 h-20 object-cover rounded"
+                          />
+                        )}
+                        <div>
+                          <h5 className="text-lg font-semibold">{p?.title}</h5>
+                          <p className="text-sm text-gray-700">{p?.description}</p>
+                          <p className="text-sm text-gray-600">Color: {p?.color}</p>
+                          <p className="text-sm text-gray-600">Style: {p?.style}</p>
+                          <p className="text-sm text-gray-600">Material: {p?.material}</p>
+                          <p className="text-sm text-gray-600">Available Stock: {p?.availableStock}</p>
+                          <p className="text-sm text-gray-800 font-medium mt-1">
+                            🛍️ Quantity Ordered: {product.quantity}
+                          </p>
+                          <p className="text-sm text-green-700 font-semibold">
+                            ₹ Price: {product.quantity*p?.price}
+                          </p>
+                        </div>
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
+          ))}
+        </div>
       )}
     </div>
   );
 };
 
-export default ManageOrders;
+export default AdminUserOrders;

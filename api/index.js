@@ -10,13 +10,15 @@ const productRouter = require('./routes/product');
 const cartRouter = require('./routes/cart');
 const orderRouter = require('./routes/order');
 const checkoutRouter = require('./routes/checkout');
+const userprod = require('./routes/userproduct');
+
 const { handleMalformedJson } = require('./middlewares/handleError');
 
 const app = express();
 
 // MongoDB connection
 mongoose.set('strictQuery', true);
-const url = "mongodb+srv://chandrua22cse:DJXKFdoDkeqVtiUy@cluster0.p42zm.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0";
+const url = "mongodb+srv://arvindm22cse:31-Aug-04@kumartextiles.iw7hdi2.mongodb.net/?retryWrites=true&w=majority&appName=Kumartextiles";
 mongoose.connect(url, {
   useUnifiedTopology: true,
   useNewUrlParser: true
@@ -37,7 +39,7 @@ app.use("/products", productRouter);
 app.use("/carts", cartRouter);
 app.use("/orders", orderRouter);
 app.use("/checkout", checkoutRouter);
-
+app.use("/userprod", userprod);
 // Server status
 app.get("/", (req, res) => {
   res.json({ status: "ok" });

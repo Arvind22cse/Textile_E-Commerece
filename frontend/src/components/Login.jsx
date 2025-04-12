@@ -13,17 +13,25 @@ const Login = ({ handleCloseClick, handleLoginSuccess }) => {
     const password = event.target.password.value;
 
     try {
-      const response = await axios.post("http://localhost:5000/auth/login", { email, password });
+      const response = await axios.post("http://localhost:5000/auth/login", {email, password });
       const { accessToken, isAdmin } = response.data;
+      const loginstatus = response.data.islogin;
+      localStorage.setItem("user", JSON.stringify({ email: email, name: response.data.name }));
+
 
       localStorage.setItem("token", accessToken);
       localStorage.setItem("isAdmin", isAdmin);
-
+      localStorage.setItem("islogin", true);
+      
+      localStorage.setItem("username",response.data.username);
+      localStorage.setItem("useremail",response.data.useremail);
+      
       handleLoginSuccess(isAdmin ? "admin" : "user");
       navigate(isAdmin ? "/admin" : "/");
     } catch (error) {
       console.error("Login failed:", error);
       alert("Invalid email or password");
+      localStorage.setItem("islogin", false);
     } finally {
       setLoading(false);
     }
